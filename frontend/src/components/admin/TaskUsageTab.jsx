@@ -2,13 +2,11 @@ import { useMemo, useState } from "react";
 import {
   TrendingUp, TrendingDown, ArrowUpRight, Download, Info,
   Sparkles, Server, Plug, Activity, CircleDot, Filter,
-  BarChart3, TableIcon, Trophy, Rocket, ShieldCheck, Target,
-  Zap,
+  BarChart3, TableIcon, Zap, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import {
-  BarChart, Bar, LineChart, Line, CartesianGrid,
+  LineChart, Line, CartesianGrid,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell, PieChart, Pie,
-  ComposedChart, Area,
 } from "recharts";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +26,7 @@ import { cn } from "@/lib/utils";
 
 import {
   getMonthlySlice, getYearlySlice, RESOURCE_META, YEARS,
-  formatNumber, formatFull, formatPct,
+  formatNumber, formatFull,
 } from "@/lib/usageMockData";
 
 const RESOURCE_ICONS = {
@@ -97,35 +95,6 @@ function KpiCard({ testId, label, value, change, accent, icon: Icon, inverse, hi
   );
 }
 
-function InsightCard({ testId, icon: Icon, label, value, sub, tone = "default" }) {
-  const toneClass = {
-    default: "bg-accent text-primary-strong",
-    success: "bg-[hsl(142,71%,93%)] text-[hsl(142,71%,28%)]",
-    warn: "bg-[hsl(38,92%,93%)] text-[hsl(38,92%,32%)]",
-    danger: "bg-[hsl(0,75%,95%)] text-[hsl(0,75%,42%)]",
-    info: "bg-[hsl(200,75%,93%)] text-[hsl(200,75%,32%)]",
-  }[tone];
-  return (
-    <div
-      data-testid={testId}
-      className="flex gap-3 p-4 rounded-xl border border-border/60 bg-card hover:border-border transition-colors"
-    >
-      <div className={cn("size-9 rounded-lg grid place-items-center shrink-0", toneClass)}>
-        <Icon className="size-[18px]" strokeWidth={2} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
-          {label}
-        </div>
-        <div className="text-base font-bold tracking-tight truncate num-tabular mt-0.5">
-          {value}
-        </div>
-        {sub && <div className="text-xs text-muted-foreground mt-0.5 truncate">{sub}</div>}
-      </div>
-    </div>
-  );
-}
-
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
@@ -158,7 +127,6 @@ export default function TaskUsageTab() {
   );
 
   const xAxisLabel = period === "monthly" ? "Month" : "Year";
-  const periodWord = period === "monthly" ? "month" : "year";
 
   // Distribution donut data
   const distribution = data.breakdown.map((b) => ({ name: b.name, value: b.total, key: b.key }));
@@ -231,16 +199,37 @@ export default function TaskUsageTab() {
           </div>
 
           {period === "monthly" && (
-            <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-              <SelectTrigger data-testid="year-select" className="h-9 w-[110px] font-medium">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[...YEARS].reverse().map((y) => (
-                  <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div
+              data-testid="year-stepper"
+              className="inline-flex items-center h-9 rounded-lg border border-border bg-card overflow-hidden"
+            >
+              <button
+                data-testid="year-prev"
+                onClick={() => setSelectedYear((y) => Math.max(YEARS[0], y - 1))}
+                disabled={selectedYear <= YEARS[0]}
+                className="h-full px-2 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                aria-label="Previous year"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <div className="px-2 flex items-center gap-1.5 border-x border-border">
+                <span className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">
+                  Year
+                </span>
+                <span data-testid="year-value" className="text-sm font-bold num-tabular">
+                  {selectedYear}
+                </span>
+              </div>
+              <button
+                data-testid="year-next"
+                onClick={() => setSelectedYear((y) => Math.min(YEARS[YEARS.length - 1], y + 1))}
+                disabled={selectedYear >= YEARS[YEARS.length - 1]}
+                className="h-full px-2 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                aria-label="Next year"
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
           )}
 
           <Select value={resource} onValueChange={setResource}>
@@ -273,44 +262,6 @@ export default function TaskUsageTab() {
           hint="Tasks completed without errors." />
         <KpiCard testId="kpi-failed" label="Failed" value={data.kpi.failed.value} change={data.kpi.failed.change} icon={TrendingDown} accent="bg-[hsl(0,75%,95%)] text-[hsl(0,75%,45%)]" inverse
           hint="Tasks that ended with errors. A drop here is good." />
-      </div>
-
-      {/* Business Insights Row */}
-      <div data-testid="insights-row" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <InsightCard
-          testId="insight-peak"
-          icon={Trophy}
-          label={`Peak ${periodWord}`}
-          value={data.insights.peak.label}
-          sub={`${formatFull(data.insights.peak.value)} tasks executed`}
-          tone="default"
-        />
-        <InsightCard
-          testId="insight-growth"
-          icon={Rocket}
-          label="Fastest growing"
-          value={RESOURCE_META[data.insights.fastest.key].name}
-          sub={`${formatPct(data.insights.fastest.change)} ${period === "monthly" ? "MoM trajectory" : "vs 2022"}`}
-          tone="warn"
-        />
-        <InsightCard
-          testId="insight-sla"
-          icon={ShieldCheck}
-          label="Success rate"
-          value={`${data.insights.successRate.toFixed(2)}%`}
-          sub={data.insights.successRate >= 95 ? "Above 95% SLA target" : "Below SLA — investigate"}
-          tone={data.insights.successRate >= 95 ? "success" : "danger"}
-        />
-        <InsightCard
-          testId="insight-projection"
-          icon={Target}
-          label={period === "monthly" ? "Momentum H2 vs H1" : "Projected next year"}
-          value={period === "monthly" ? formatPct(data.insights.momentum) : formatNumber(data.insights.projection)}
-          sub={period === "monthly"
-            ? "Second-half pace vs first half"
-            : `Based on ${formatPct(data.kpi.total.change, 1)} YoY growth`}
-          tone="info"
-        />
       </div>
 
       {/* Main chart card with Graph/Table toggle */}
@@ -364,26 +315,20 @@ export default function TaskUsageTab() {
           {chartView === "graph" ? (
             <div data-testid="main-chart" className="h-[340px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={data.series} margin={{ top: 8, right: 8, left: -4, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="gTotalArea" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
+                <LineChart data={data.series} margin={{ top: 8, right: 8, left: -4, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis dataKey="label" tickLine={false} axisLine={false}
                     tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                   <YAxis tickLine={false} axisLine={false}
                     tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                     tickFormatter={(v) => formatNumber(v)} width={64} />
-                  <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--accent))" }} />
+                  <Tooltip content={<ChartTooltip />} cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1 }} />
                   <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} iconType="circle" />
-                  <Bar dataKey="billable" name="Billable" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} barSize={period === "monthly" ? 16 : 32} />
-                  <Bar dataKey="failed" name="Failed" fill="hsl(var(--chart-4))" radius={[4, 4, 0, 0]} barSize={period === "monthly" ? 10 : 22} />
-                  <Area type="monotone" dataKey="total" name="Total" stroke="hsl(var(--chart-1))" strokeWidth={2.5} fill="url(#gTotalArea)" />
-                  <Line type="monotone" dataKey="successful" name="Successful" stroke="hsl(var(--chart-3))" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 0, fill: "hsl(var(--chart-3))" }} />
-                </ComposedChart>
+                  <Line type="monotone" dataKey="total" name="Total" stroke="hsl(var(--chart-1))" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 0, fill: "hsl(var(--chart-1))" }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="billable" name="Billable" stroke="hsl(var(--chart-2))" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 0, fill: "hsl(var(--chart-2))" }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="successful" name="Successful" stroke="hsl(var(--chart-3))" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 0, fill: "hsl(var(--chart-3))" }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="failed" name="Failed" stroke="hsl(var(--chart-4))" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 0, fill: "hsl(var(--chart-4))" }} activeDot={{ r: 5 }} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           ) : (
