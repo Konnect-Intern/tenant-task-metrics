@@ -1,0 +1,115 @@
+{
+  "theme_and_archetype": {
+    "name": "Archetype 4: Swiss & High-Contrast (Light Theme)",
+    "rationale": "Enterprise Admin Dashboard for Konnectify. Requires high density, absolute clarity, and functional beauty. The primary brand color is Green, driving a clean, objective, and authoritative 'Control Room' aesthetic."
+  },
+  "typography": {
+    "headings": {
+      "family": "Outfit or Cabinet Grotesk",
+      "instruction": "Replace Inter for headings. Use tracking-tight (-0.02em) for all titles. H1 (Tab Title) should be text-3xl font-semibold. Card Titles should be text-sm font-medium uppercase tracking-[0.05em] (Overline style)."
+    },
+    "body": {
+      "family": "Inter",
+      "instruction": "Use for standard text, descriptions, and table data."
+    },
+    "numbers_and_data": {
+      "family": "Geist Mono",
+      "instruction": "CRITICAL: All KPI values, chart axes, dates, and deltas MUST use Geist Mono for tabular alignment and a technical 'iPaaS' feel."
+    }
+  },
+  "color_palette": {
+    "backgrounds": {
+      "app": "bg-slate-50",
+      "card": "bg-white",
+      "interactive_hover": "hover:bg-slate-100"
+    },
+    "borders": "border-slate-200 (1px solid, never soft/muddy)",
+    "text": {
+      "primary": "text-slate-900",
+      "secondary": "text-slate-500",
+      "muted": "text-slate-400"
+    },
+    "brand": {
+      "primary": "Konnectify Green (#10B981 or similar). Use sparingly for active states, selected toggles, and 'Successful' metrics."
+    },
+    "semantics": {
+      "success": "text-emerald-600 bg-emerald-50",
+      "warning": "text-amber-600 bg-amber-50",
+      "danger": "text-rose-600 bg-rose-50 (Used for Failed tasks; inverse logic applied here)",
+      "info": "text-indigo-600 bg-indigo-50 (Used for Billable tasks)",
+      "neutral": "text-slate-700 bg-slate-100 (Used for Total tasks)"
+    },
+    "chart_hsl_vars": {
+      "--chart-1": "Total (Slate/Gray)",
+      "--chart-2": "Billable (Indigo/Blue)",
+      "--chart-3": "Successful (Konnectify Green)",
+      "--chart-4": "Failed (Rose/Red)"
+    }
+  },
+  "spacing_and_grid": {
+    "strategy": "The 'Control Room' Grid Protocol",
+    "page_container": "p-6 md:p-8 max-w-[1600px] mx-auto space-y-6",
+    "kpi_grid": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4",
+    "main_content_grid": "grid grid-cols-1 lg:grid-cols-3 gap-6",
+    "card_padding": "p-5 or p-6 (generous internal breathing room)",
+    "radii": "rounded-lg (max 8px, keeping edges relatively sharp to maintain Swiss/Technical feel)"
+  },
+  "component_details": {
+    "header_and_controls": {
+      "layout": "Flex container with Title + Live Indicator on left, and Control Group on right.",
+      "live_indicator": "Small green pulsing dot (animate-pulse) next to a 'Live' label in Geist Mono.",
+      "year_stepper": "Styled as '‹ YEAR 2026 ›'. Use ghost buttons for arrows, Geist Mono for the text. Add hover:bg-slate-100.",
+      "period_toggle": "Shadcn Tabs list styled as a segmented control (h-9, bg-slate-100, p-1 rounded-md).",
+      "module_filter": "Select dropdown with clean 1px border. Default: 'All Modules'."
+    },
+    "kpi_cards": {
+      "style": "bg-white border border-slate-200 shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200.",
+      "layout": "Top row: Overline title + subtle icon. Middle: Large Geist Mono value (text-3xl font-semibold). Bottom: Delta badge.",
+      "delta_treatment": "Small pill badge (px-2 py-0.5 rounded-full text-xs font-medium). Inverse semantics for Failed tasks (Red is bad/up, Green is good/down)."
+    },
+    "main_chart_card": {
+      "span": "lg:col-span-2",
+      "header": "Flex between title/subtitle and Graph/Table segmented toggle.",
+      "recharts_styling": {
+        "lines": "strokeWidth={2}, activeDot={{ r: 6, strokeWidth: 0 }}. No dots on resting state for clean look.",
+        "grid": "strokeDasharray='3 3' vertical={false} stroke='#E2E8F0'",
+        "axes": "tick={{ fill: '#64748B', fontSize: 12, fontFamily: 'Geist Mono' }} axisLine={false} tickLine={false}",
+        "tooltip": "Custom glassmorphism tooltip: backdrop-blur-md bg-white/90 border border-slate-200 shadow-lg p-3 rounded-lg."
+      },
+      "legend": "Interactive legend. Hovering a legend item lowers opacity of other lines. Clicking toggles visibility.",
+      "table_view": "When toggled, show Shadcn Table. border-collapse, text-sm, hover:bg-slate-50 on rows. Right-align numeric columns."
+    },
+    "distribution_donut": {
+      "span": "lg:col-span-1",
+      "style": "Recharts PieChart with innerRadius={60} outerRadius={80} paddingAngle={2}. Custom active shape on hover.",
+      "legend": "Vertical list below donut. Color dot + Label + % + Raw Value."
+    },
+    "performance_list": {
+      "span": "lg:col-span-1",
+      "style": "List of modules. For each: Name, Success Rate bar (bg-slate-100 with inner bg-emerald-500 fill), and Delta. Compact spacing (gap-3)."
+    },
+    "module_summary_table": {
+      "span": "lg:col-span-full",
+      "style": "Standard Shadcn Table. Use Geist Mono for all metric columns. Right-align numeric data. Sticky header if tall."
+    }
+  },
+  "motion_and_microinteractions": {
+    "hover_states": "All buttons, rows, and legend items must have a 0.2s ease transition.",
+    "entrance_animation": "Stagger KPI cards on mount (translate-y-2 to 0, opacity 0 to 1).",
+    "chart_interactions": "Smooth line drawing animation on mount. Synchronized Tooltips."
+  },
+  "accessibility_and_testing": {
+    "testing_attributes": [
+      "data-testid='task-usage-tab-trigger'",
+      "data-testid='period-toggle-monthly'",
+      "data-testid='period-toggle-yearly'",
+      "data-testid='year-stepper-prev'",
+      "data-testid='year-stepper-next'",
+      "data-testid='module-filter-select'",
+      "data-testid='kpi-card-total'",
+      "data-testid='main-chart-graph-view'",
+      "data-testid='main-chart-table-view'"
+    ],
+    "contrast": "Ensure all text, especially muted/secondary text, passes APCA contrast. No grey-on-grey. Use Slate-500 minimum against white."
+  }
+}
