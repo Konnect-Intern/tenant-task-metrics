@@ -168,7 +168,7 @@ export default function TaskUsageTab() {
     ...data.breakdown,
     {
       key: "total",
-      name: "Total (All Resources)",
+      name: "Total (All Modules)",
       total: data.kpi.total.value,
       billable: data.kpi.billable.value,
       successful: data.kpi.successful.value,
@@ -249,7 +249,7 @@ export default function TaskUsageTab() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="total">All Resources</SelectItem>
+              <SelectItem value="total">All Modules</SelectItem>
               <SelectItem value="konnectors">Konnectors</SelectItem>
               <SelectItem value="agents">Agents</SelectItem>
               <SelectItem value="mcp">MCP Servers</SelectItem>
@@ -437,7 +437,7 @@ export default function TaskUsageTab() {
             <div className="mb-4">
               <h3 className="text-base font-bold">Usage Distribution</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Share of total tasks by resource type · {period === "monthly" ? selectedYear : "current year"}
+                Share of total tasks by module type · {period === "monthly" ? selectedYear : "current year"}
               </p>
             </div>
             <div className="flex items-center gap-5">
@@ -486,7 +486,7 @@ export default function TaskUsageTab() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-base font-bold">Performance by Resource</h3>
+                <h3 className="text-base font-bold">Performance by Module</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Success rate, volume & growth signal</p>
               </div>
               <Badge variant="secondary" className="bg-accent text-accent-foreground border-0 text-[10px]">
@@ -541,7 +541,7 @@ export default function TaskUsageTab() {
         <CardContent className="p-0">
           <div className="flex items-center justify-between px-5 py-4">
             <div>
-              <h3 className="text-base font-bold">Resource Summary</h3>
+              <h3 className="text-base font-bold">Module Summary</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {period === "monthly" ? `Aggregated for ${selectedYear}` : `Current year (${YEARS[YEARS.length - 1]})`}
                 {" "}· change is{" "}
@@ -557,7 +557,7 @@ export default function TaskUsageTab() {
           <Table data-testid="usage-table">
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
-                <TableHead className="pl-5">Resource</TableHead>
+                <TableHead className="pl-5">Module</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead className="text-right">Billable</TableHead>
                 <TableHead className="text-right">Successful</TableHead>
