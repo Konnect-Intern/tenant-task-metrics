@@ -188,7 +188,7 @@ export function getMonthlySlice(year, resource = "total") {
     breakdown: [
       { key: "konnectors", name: "Konnectors", total: rows.reduce((s, r) => s + r.konnectors, 0) },
       { key: "agents", name: "Agents", total: rows.reduce((s, r) => s + r.agents, 0) },
-      { key: "mcp", name: "MCP Servers", total: rows.reduce((s, r) => s + r.mcp, 0) },
+      { key: "mcp", name: "MCP Global", total: rows.reduce((s, r) => s + r.mcp, 0) },
     ].map((b, i, arr) => {
       const billable = Math.round(b.total * 0.78);
       const failed = Math.round(b.total * (0.04 + i * 0.005));
@@ -255,7 +255,7 @@ export function getYearlySlice(resource = "total") {
       const successful = total - failed;
       const prevTotal = rows[rows.length - 2][k];
       const change = pctChange(total, prevTotal);
-      const name = { konnectors: "Konnectors", agents: "Agents", mcp: "MCP Servers" }[k];
+      const name = { konnectors: "Konnectors", agents: "Agents", mcp: "MCP Global" }[k];
       return { key: k, name, total, billable, successful, failed, change };
     }),
   };
@@ -276,7 +276,7 @@ export const RESOURCE_META = {
     iconColor: "text-[hsl(38,92%,38%)]",
   },
   mcp: {
-    name: "MCP Servers",
+    name: "MCP Global",
     chartVar: "--chart-5",
     iconBg: "bg-[hsl(200,75%,93%)]",
     iconColor: "text-[hsl(200,75%,38%)]",

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import {
   TrendingUp, TrendingDown, ArrowUpRight, Download, Info,
-  Sparkles, Server, Plug, Activity, CircleDot, Filter,
+  Sparkles, Server, Plug, Activity, ListChecks, BadgeDollarSign,
+  CircleCheckBig, CircleX, Filter,
   BarChart3, TableIcon, Zap, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import {
@@ -64,25 +65,21 @@ function KpiCard({ testId, label, value, change, accent, icon: Icon, inverse, hi
       className="animate-rise relative overflow-hidden border-border/70 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200"
     >
       <CardContent className="p-5">
-        <div className="flex items-start justify-between">
-          <div className={cn("size-9 rounded-lg grid place-items-center", accent)}>
-            <Icon className="size-[18px]" strokeWidth={2} />
+        <div className="flex items-center justify-between gap-3">
+          <div className={cn("size-11 shrink-0 rounded-xl grid place-items-center", accent)}>
+            <Icon className="size-[22px]" strokeWidth={2.25} />
           </div>
-          <DeltaPill value={change} inverse={inverse} />
+          <div className="shrink-0">
+            <DeltaPill value={change} inverse={inverse} />
+          </div>
         </div>
-        <div className="mt-4 flex items-baseline gap-1.5">
-          <span className="text-[28px] leading-none font-bold tracking-tight num-tabular">
-            {formatNumber(value)}
-          </span>
-          <span className="text-xs font-medium text-muted-foreground">tasks</span>
-        </div>
-        <div className="mt-1.5 flex items-center justify-between">
-          <span className="text-sm font-medium text-muted-foreground">{label}</span>
+        <div className="mt-4 flex items-center justify-between gap-2">
+          <span className="text-sm font-semibold text-foreground">{label}</span>
           {hint && (
             <TooltipProvider delayDuration={150}>
               <UITooltip>
                 <TooltipTrigger asChild>
-                  <Info className="size-3.5 text-muted-foreground/70 cursor-help" />
+                  <Info className="size-3.5 shrink-0 text-muted-foreground/70 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-[220px] text-xs">
                   {hint}
@@ -90,6 +87,12 @@ function KpiCard({ testId, label, value, change, accent, icon: Icon, inverse, hi
               </UITooltip>
             </TooltipProvider>
           )}
+        </div>
+        <div className="mt-2 flex items-baseline gap-1.5">
+          <span className="text-[28px] leading-none font-bold tracking-tight num-tabular">
+            {formatNumber(value)}
+          </span>
+          <span className="text-xs font-medium text-muted-foreground">tasks</span>
         </div>
       </CardContent>
     </Card>
@@ -241,15 +244,22 @@ export default function TaskUsageTab() {
             ))}
           </div>
 
-          {period === "monthly" && (
+          <div
+            data-testid="year-stepper-slot"
+            className="w-[132px] shrink-0"
+            aria-hidden={period !== "monthly"}
+          >
             <div
               data-testid="year-stepper"
-              className="inline-flex items-center h-9 rounded-lg border border-border bg-card overflow-hidden"
+              className={cn(
+                "inline-flex w-full items-center justify-between h-9 rounded-lg border border-border bg-card overflow-hidden",
+                period !== "monthly" && "invisible pointer-events-none"
+              )}
             >
               <button
                 data-testid="year-prev"
                 onClick={() => setSelectedYear((y) => Math.max(YEARS[0], y - 1))}
-                disabled={selectedYear <= YEARS[0]}
+                disabled={period !== "monthly" || selectedYear <= YEARS[0]}
                 className="h-full px-2 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 aria-label="Previous year"
               >
@@ -266,14 +276,14 @@ export default function TaskUsageTab() {
               <button
                 data-testid="year-next"
                 onClick={() => setSelectedYear((y) => Math.min(YEARS[YEARS.length - 1], y + 1))}
-                disabled={selectedYear >= YEARS[YEARS.length - 1]}
+                disabled={period !== "monthly" || selectedYear >= YEARS[YEARS.length - 1]}
                 className="h-full px-2 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 aria-label="Next year"
               >
                 <ChevronRight className="size-4" />
               </button>
             </div>
-          )}
+          </div>
 
           <Select value={resource} onValueChange={setResource}>
             <SelectTrigger data-testid="resource-filter" className="h-9 w-[180px] gap-2 font-medium">
@@ -284,7 +294,7 @@ export default function TaskUsageTab() {
               <SelectItem value="total">All Modules</SelectItem>
               <SelectItem value="konnectors">Konnectors</SelectItem>
               <SelectItem value="agents">Agents</SelectItem>
-              <SelectItem value="mcp">MCP Servers</SelectItem>
+              <SelectItem value="mcp">MCP Global</SelectItem>
             </SelectContent>
           </Select>
 
@@ -297,13 +307,13 @@ export default function TaskUsageTab() {
 
       {/* KPI Cards */}
       <div data-testid="kpi-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard testId="kpi-total" index={0} label="Total Tasks" value={data.kpi.total.value} change={data.kpi.total.change} icon={Activity} accent="bg-accent text-primary-strong"
-          hint="Sum of every task executed across konnectors, agents and MCP servers." />
-        <KpiCard testId="kpi-billable" index={1} label="Billable Tasks" value={data.kpi.billable.value} change={data.kpi.billable.change} icon={CircleDot} accent="bg-[hsl(38,92%,93%)] text-[hsl(38,92%,32%)]"
+        <KpiCard testId="kpi-total" index={0} label="Total Tasks" value={data.kpi.total.value} change={data.kpi.total.change} icon={ListChecks} accent="bg-accent text-primary-strong"
+          hint="Sum of every task executed across konnectors, agents and MCP Global." />
+        <KpiCard testId="kpi-billable" index={1} label="Billable Tasks" value={data.kpi.billable.value} change={data.kpi.billable.change} icon={BadgeDollarSign} accent="bg-[hsl(38,92%,93%)] text-[hsl(38,92%,32%)]"
           hint="Tasks that count toward the tenant's plan quota." />
-        <KpiCard testId="kpi-successful" index={2} label="Successful" value={data.kpi.successful.value} change={data.kpi.successful.change} icon={TrendingUp} accent="bg-[hsl(142,71%,93%)] text-[hsl(142,71%,28%)]"
+        <KpiCard testId="kpi-successful" index={2} label="Successful Tasks" value={data.kpi.successful.value} change={data.kpi.successful.change} icon={CircleCheckBig} accent="bg-[hsl(142,71%,93%)] text-[hsl(142,71%,28%)]"
           hint="Tasks completed without errors." />
-        <KpiCard testId="kpi-failed" index={3} label="Failed" value={data.kpi.failed.value} change={data.kpi.failed.change} icon={TrendingDown} accent="bg-[hsl(0,75%,95%)] text-[hsl(0,75%,45%)]" inverse
+        <KpiCard testId="kpi-failed" index={3} label="Failed Tasks" value={data.kpi.failed.value} change={data.kpi.failed.change} icon={CircleX} accent="bg-[hsl(0,75%,95%)] text-[hsl(0,75%,45%)]" inverse
           hint="Tasks that ended with errors. A drop here is good." />
       </div>
 
