@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
 import {
   TrendingUp, TrendingDown, ArrowUpRight, Download, Info,
-  Sparkles, Server, Plug, Activity, ListChecks, BadgeDollarSign,
-  CircleCheckBig, CircleX, Filter,
-  BarChart3, TableIcon, Zap, ChevronLeft, ChevronRight,
+  PlugZap, Brain, Cpu, Activity, Filter,
+  BarChart3, TableIcon, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import {
   LineChart, Line, CartesianGrid,
@@ -31,9 +30,9 @@ import {
 } from "@/lib/usageMockData";
 
 const RESOURCE_ICONS = {
-  konnectors: Plug,
-  agents: Sparkles,
-  mcp: Server,
+  konnectors: PlugZap,
+  agents: Brain,
+  mcp: Cpu,
   total: Activity,
 };
 
@@ -57,7 +56,7 @@ function DeltaPill({ value, inverse = false, small = false }) {
   );
 }
 
-function KpiCard({ testId, label, value, change, accent, icon: Icon, inverse, hint, index = 0 }) {
+function KpiCard({ testId, label, value, change, inverse, hint, index = 0 }) {
   return (
     <Card
       data-testid={testId}
@@ -65,15 +64,7 @@ function KpiCard({ testId, label, value, change, accent, icon: Icon, inverse, hi
       className="animate-rise relative overflow-hidden border-border/70 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200"
     >
       <CardContent className="p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div className={cn("size-11 shrink-0 rounded-xl grid place-items-center", accent)}>
-            <Icon className="size-[22px]" strokeWidth={2.25} />
-          </div>
-          <div className="shrink-0">
-            <DeltaPill value={change} inverse={inverse} />
-          </div>
-        </div>
-        <div className="mt-4 flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-semibold text-foreground">{label}</span>
           {hint && (
             <TooltipProvider delayDuration={150}>
@@ -88,11 +79,15 @@ function KpiCard({ testId, label, value, change, accent, icon: Icon, inverse, hi
             </TooltipProvider>
           )}
         </div>
-        <div className="mt-2 flex items-baseline gap-1.5">
-          <span className="text-[28px] leading-none font-bold tracking-tight num-tabular">
+        <div className="mt-3 flex items-baseline gap-1.5">
+          <span className="text-[30px] leading-none font-bold tracking-tight num-tabular">
             {formatNumber(value)}
           </span>
           <span className="text-xs font-medium text-muted-foreground">tasks</span>
+        </div>
+        <div className="mt-4 flex items-center justify-between gap-2 border-t border-border/70 pt-3">
+          <span className="text-xs text-muted-foreground">vs previous period</span>
+          <DeltaPill value={change} inverse={inverse} />
         </div>
       </CardContent>
     </Card>
@@ -206,26 +201,12 @@ export default function TaskUsageTab() {
   return (
     <div data-testid="task-usage-tab" className="space-y-6">
       {/* Header / Filters Row */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            Task Usage Analytics
-            <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-accent-foreground">
-              <span className="size-1.5 rounded-full bg-primary animate-soft-pulse" />
-              Live
-            </span>
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {data.rangeLabel}
-            <span className="mx-1.5 opacity-50">•</span>
-            {data.comparedTo}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <h2 className="text-xl font-bold tracking-tight">Task Usage Analytics</h2>
           <div
             data-testid="period-toggle"
-            className="inline-flex items-center rounded-lg border border-border bg-card p-0.5"
+            className="inline-flex items-center self-start rounded-lg border border-border bg-card p-0.5 sm:self-auto"
           >
             {["monthly", "yearly"].map((p) => (
               <button
@@ -243,29 +224,24 @@ export default function TaskUsageTab() {
               </button>
             ))}
           </div>
+        </div>
 
-          <div
-            data-testid="year-stepper-slot"
-            className="w-[132px] shrink-0"
-            aria-hidden={period !== "monthly"}
-          >
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap xl:justify-end">
+          {period === "monthly" && (
             <div
               data-testid="year-stepper"
-              className={cn(
-                "inline-flex w-full items-center justify-between h-9 rounded-lg border border-border bg-card overflow-hidden",
-                period !== "monthly" && "invisible pointer-events-none"
-              )}
+              className="inline-flex w-[152px] shrink-0 items-center h-9 rounded-lg border border-border bg-card overflow-hidden"
             >
               <button
                 data-testid="year-prev"
                 onClick={() => setSelectedYear((y) => Math.max(YEARS[0], y - 1))}
-                disabled={period !== "monthly" || selectedYear <= YEARS[0]}
-                className="h-full px-2 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                disabled={selectedYear <= YEARS[0]}
+                className="h-full w-9 shrink-0 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-secondary disabled:text-muted-foreground/40 disabled:hover:bg-transparent transition-colors"
                 aria-label="Previous year"
               >
                 <ChevronLeft className="size-4" />
               </button>
-              <div className="px-2 flex items-center gap-1.5 border-x border-border">
+              <div className="h-full min-w-0 flex-1 flex items-center justify-center gap-1.5 border-x border-border">
                 <span className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">
                   Year
                 </span>
@@ -276,14 +252,14 @@ export default function TaskUsageTab() {
               <button
                 data-testid="year-next"
                 onClick={() => setSelectedYear((y) => Math.min(YEARS[YEARS.length - 1], y + 1))}
-                disabled={period !== "monthly" || selectedYear >= YEARS[YEARS.length - 1]}
-                className="h-full px-2 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                disabled={selectedYear >= YEARS[YEARS.length - 1]}
+                className="h-full w-9 shrink-0 grid place-items-center text-muted-foreground hover:text-foreground hover:bg-secondary disabled:text-muted-foreground/40 disabled:hover:bg-transparent transition-colors"
                 aria-label="Next year"
               >
                 <ChevronRight className="size-4" />
               </button>
             </div>
-          </div>
+          )}
 
           <Select value={resource} onValueChange={setResource}>
             <SelectTrigger data-testid="resource-filter" className="h-9 w-[180px] gap-2 font-medium">
@@ -307,13 +283,13 @@ export default function TaskUsageTab() {
 
       {/* KPI Cards */}
       <div data-testid="kpi-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard testId="kpi-total" index={0} label="Total Tasks" value={data.kpi.total.value} change={data.kpi.total.change} icon={ListChecks} accent="bg-accent text-primary-strong"
+        <KpiCard testId="kpi-total" index={0} label="Total Tasks" value={data.kpi.total.value} change={data.kpi.total.change}
           hint="Sum of every task executed across konnectors, agents and MCP Global." />
-        <KpiCard testId="kpi-billable" index={1} label="Billable Tasks" value={data.kpi.billable.value} change={data.kpi.billable.change} icon={BadgeDollarSign} accent="bg-[hsl(38,92%,93%)] text-[hsl(38,92%,32%)]"
+        <KpiCard testId="kpi-billable" index={1} label="Billable Tasks" value={data.kpi.billable.value} change={data.kpi.billable.change}
           hint="Tasks that count toward the tenant's plan quota." />
-        <KpiCard testId="kpi-successful" index={2} label="Successful Tasks" value={data.kpi.successful.value} change={data.kpi.successful.change} icon={CircleCheckBig} accent="bg-[hsl(142,71%,93%)] text-[hsl(142,71%,28%)]"
+        <KpiCard testId="kpi-successful" index={2} label="Successful Tasks" value={data.kpi.successful.value} change={data.kpi.successful.change}
           hint="Tasks completed without errors." />
-        <KpiCard testId="kpi-failed" index={3} label="Failed Tasks" value={data.kpi.failed.value} change={data.kpi.failed.change} icon={CircleX} accent="bg-[hsl(0,75%,95%)] text-[hsl(0,75%,45%)]" inverse
+        <KpiCard testId="kpi-failed" index={3} label="Failed Tasks" value={data.kpi.failed.value} change={data.kpi.failed.change} inverse
           hint="Tasks that ended with errors. A drop here is good." />
       </div>
 
@@ -456,7 +432,7 @@ export default function TaskUsageTab() {
             <div className="mb-4">
               <h3 className="text-base font-bold">Usage Distribution</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Share of total tasks by module type · {period === "monthly" ? selectedYear : "current year"}
+                Share of total tasks by module type
               </p>
             </div>
             <div className="flex items-center gap-5">
@@ -508,10 +484,6 @@ export default function TaskUsageTab() {
                 <h3 className="text-base font-bold">Performance by Module</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Success rate, volume & growth signal</p>
               </div>
-              <Badge variant="secondary" className="bg-accent text-accent-foreground border-0 text-[10px]">
-                <Zap className="size-3 mr-1" strokeWidth={2.5} />
-                Auto-updated
-              </Badge>
             </div>
             <div className="space-y-3">
               {data.breakdown.map((b) => {
