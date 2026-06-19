@@ -48,12 +48,18 @@ remain present but mocked statically.
 - Hover tooltips on every chart with branded styling
 - Cross-tab navigation (Task Usage is the default active tab to showcase the work)
 
-## What's Implemented (date: 2026-02)
+## What's Implemented (date: 2026-06)
 - [x] Design tokens adapted from supplied design system
 - [x] Static recreation of existing admin shell (sidebar + topbar + tenant header)
 - [x] All 5 existing tabs preserved (with Feature Customization recreated visually)
-- [x] New **Task Usage** tab — both Monthly + Yearly views fully designed
-- [x] data-testid attributes on every interactive element
+- [x] New **Task Usage** tab — single line graph; Monthly (months on X) + Yearly (years on X)
+- [x] "Combined" → "Total"; "Resources" → "Modules" everywhere
+- [x] Graph ↔ Table toggle on main chart
+- [x] Year selection reworked to a labeled `‹ YEAR 2026 ›` stepper (Monthly view only, bounds 2022–2026)
+- [x] Removed business insight cards (Peak/Fastest/Success rate/Momentum) per user request
+- [x] Line-only chart (Total/Billable/Successful/Failed) — removed confusing bars+area
+- [x] UI/UX polish: interactive legend (hover-dim + click-to-toggle lines), glass tooltip, clean resting lines + larger active dots, staggered KPI entrance animation, hover lift on cards
+- [x] data-testid attributes on every interactive element (incl. legend-{key}, year-prev/next/value)
 
 ## Backlog / Next Tasks (P0/P1/P2)
 - **P1** — Wire to real backend endpoints (`GET /api/tenants/:id/usage?period=monthly|yearly&resource=...`)

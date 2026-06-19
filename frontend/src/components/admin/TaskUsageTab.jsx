@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import {
   LineChart, Line, CartesianGrid,
-  XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell, PieChart, Pie,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie,
 } from "recharts";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -56,11 +56,12 @@ function DeltaPill({ value, inverse = false, small = false }) {
   );
 }
 
-function KpiCard({ testId, label, value, change, accent, icon: Icon, inverse, hint }) {
+function KpiCard({ testId, label, value, change, accent, icon: Icon, inverse, hint, index = 0 }) {
   return (
     <Card
       data-testid={testId}
-      className="relative overflow-hidden border-border/70 shadow-xs hover:shadow-md transition-shadow"
+      style={{ animationDelay: `${index * 70}ms` }}
+      className="animate-rise relative overflow-hidden border-border/70 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200"
     >
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
@@ -98,14 +99,14 @@ function KpiCard({ testId, label, value, change, accent, icon: Icon, inverse, hi
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-border bg-popover shadow-lg px-3 py-2 text-xs">
-      <div className="font-semibold mb-1.5 text-popover-foreground">{label}</div>
-      <div className="space-y-1">
+    <div className="rounded-lg border border-border/80 bg-popover/90 backdrop-blur-md shadow-xl px-3.5 py-2.5 text-xs min-w-[160px]">
+      <div className="font-semibold mb-2 text-popover-foreground">{label}</div>
+      <div className="space-y-1.5">
         {payload.map((p) => (
           <div key={p.dataKey} className="flex items-center gap-2">
-            <span className="size-2 rounded-full" style={{ background: p.color || p.stroke || p.fill }} />
-            <span className="text-muted-foreground capitalize">{p.name}:</span>
-            <span className="font-semibold num-tabular text-popover-foreground">
+            <span className="size-2 rounded-full shrink-0" style={{ background: p.color || p.stroke || p.fill }} />
+            <span className="text-muted-foreground capitalize">{p.name}</span>
+            <span className="ml-auto font-semibold num-tabular text-popover-foreground">
               {formatFull(p.value)}
             </span>
           </div>
@@ -115,11 +116,53 @@ function ChartTooltip({ active, payload, label }) {
   );
 }
 
+const CHART_SERIES = [
+  { key: "total", name: "Total", color: "--chart-1" },
+  { key: "billable", name: "Billable", color: "--chart-2" },
+  { key: "successful", name: "Successful", color: "--chart-3" },
+  { key: "failed", name: "Failed", color: "--chart-4" },
+];
+
+function InteractiveLegend({ hidden, hovered, onToggle, onHover }) {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 pt-4" data-testid="chart-legend">
+      {CHART_SERIES.map((s) => {
+        const isHidden = hidden.includes(s.key);
+        const dimmed = hovered && hovered !== s.key;
+        return (
+          <button
+            key={s.key}
+            data-testid={`legend-${s.key}`}
+            onClick={() => onToggle(s.key)}
+            onMouseEnter={() => onHover(s.key)}
+            onMouseLeave={() => onHover(null)}
+            className={cn(
+              "inline-flex items-center gap-1.5 text-xs font-medium transition-opacity duration-200",
+              (isHidden || dimmed) ? "opacity-40" : "opacity-100"
+            )}
+          >
+            <span
+              className={cn("size-2.5 rounded-full transition-transform", !isHidden && "scale-100")}
+              style={{ background: isHidden ? "hsl(var(--muted-foreground))" : `hsl(var(${s.color}))` }}
+            />
+            <span className={cn(isHidden && "line-through text-muted-foreground")}>{s.name}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function TaskUsageTab() {
   const [period, setPeriod] = useState("monthly"); // monthly | yearly
   const [selectedYear, setSelectedYear] = useState(2026);
   const [resource, setResource] = useState("total");
   const [chartView, setChartView] = useState("graph"); // graph | table
+  const [hiddenSeries, setHiddenSeries] = useState([]);
+  const [hoveredSeries, setHoveredSeries] = useState(null);
+
+  const toggleSeries = (key) =>
+    setHiddenSeries((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
 
   const data = useMemo(
     () => (period === "monthly" ? getMonthlySlice(selectedYear, resource) : getYearlySlice(resource)),
@@ -254,13 +297,13 @@ export default function TaskUsageTab() {
 
       {/* KPI Cards */}
       <div data-testid="kpi-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard testId="kpi-total" label="Total Tasks" value={data.kpi.total.value} change={data.kpi.total.change} icon={Activity} accent="bg-accent text-primary-strong"
+        <KpiCard testId="kpi-total" index={0} label="Total Tasks" value={data.kpi.total.value} change={data.kpi.total.change} icon={Activity} accent="bg-accent text-primary-strong"
           hint="Sum of every task executed across konnectors, agents and MCP servers." />
-        <KpiCard testId="kpi-billable" label="Billable Tasks" value={data.kpi.billable.value} change={data.kpi.billable.change} icon={CircleDot} accent="bg-[hsl(38,92%,93%)] text-[hsl(38,92%,32%)]"
+        <KpiCard testId="kpi-billable" index={1} label="Billable Tasks" value={data.kpi.billable.value} change={data.kpi.billable.change} icon={CircleDot} accent="bg-[hsl(38,92%,93%)] text-[hsl(38,92%,32%)]"
           hint="Tasks that count toward the tenant's plan quota." />
-        <KpiCard testId="kpi-successful" label="Successful" value={data.kpi.successful.value} change={data.kpi.successful.change} icon={TrendingUp} accent="bg-[hsl(142,71%,93%)] text-[hsl(142,71%,28%)]"
+        <KpiCard testId="kpi-successful" index={2} label="Successful" value={data.kpi.successful.value} change={data.kpi.successful.change} icon={TrendingUp} accent="bg-[hsl(142,71%,93%)] text-[hsl(142,71%,28%)]"
           hint="Tasks completed without errors." />
-        <KpiCard testId="kpi-failed" label="Failed" value={data.kpi.failed.value} change={data.kpi.failed.change} icon={TrendingDown} accent="bg-[hsl(0,75%,95%)] text-[hsl(0,75%,45%)]" inverse
+        <KpiCard testId="kpi-failed" index={3} label="Failed" value={data.kpi.failed.value} change={data.kpi.failed.change} icon={TrendingDown} accent="bg-[hsl(0,75%,95%)] text-[hsl(0,75%,45%)]" inverse
           hint="Tasks that ended with errors. A drop here is good." />
       </div>
 
@@ -313,23 +356,44 @@ export default function TaskUsageTab() {
           </div>
 
           {chartView === "graph" ? (
-            <div data-testid="main-chart" className="h-[340px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data.series} margin={{ top: 8, right: 8, left: -4, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false}
-                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis tickLine={false} axisLine={false}
-                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                    tickFormatter={(v) => formatNumber(v)} width={64} />
-                  <Tooltip content={<ChartTooltip />} cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1 }} />
-                  <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} iconType="circle" />
-                  <Line type="monotone" dataKey="total" name="Total" stroke="hsl(var(--chart-1))" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 0, fill: "hsl(var(--chart-1))" }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="billable" name="Billable" stroke="hsl(var(--chart-2))" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 0, fill: "hsl(var(--chart-2))" }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="successful" name="Successful" stroke="hsl(var(--chart-3))" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 0, fill: "hsl(var(--chart-3))" }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="failed" name="Failed" stroke="hsl(var(--chart-4))" strokeWidth={2.5} dot={{ r: 3, strokeWidth: 0, fill: "hsl(var(--chart-4))" }} activeDot={{ r: 5 }} />
-                </LineChart>
-              </ResponsiveContainer>
+            <div data-testid="main-chart" className="w-full">
+              <div className="h-[320px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={data.series} margin={{ top: 8, right: 8, left: -4, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} dy={6}
+                      tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis tickLine={false} axisLine={false}
+                      tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                      tickFormatter={(v) => formatNumber(v)} width={64} />
+                    <Tooltip content={<ChartTooltip />} cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1, strokeDasharray: "4 4" }} />
+                    {CHART_SERIES.map((s) => {
+                      const dimmed = hoveredSeries && hoveredSeries !== s.key;
+                      return (
+                        <Line
+                          key={s.key}
+                          type="monotone"
+                          dataKey={s.key}
+                          name={s.name}
+                          hide={hiddenSeries.includes(s.key)}
+                          stroke={`hsl(var(${s.color}))`}
+                          strokeWidth={hoveredSeries === s.key ? 3 : 2}
+                          strokeOpacity={dimmed ? 0.2 : 1}
+                          dot={false}
+                          activeDot={{ r: 6, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+                          animationDuration={700}
+                        />
+                      );
+                    })}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <InteractiveLegend
+                hidden={hiddenSeries}
+                hovered={hoveredSeries}
+                onToggle={toggleSeries}
+                onHover={setHoveredSeries}
+              />
             </div>
           ) : (
             <div data-testid="main-table" className="rounded-lg border border-border/70 overflow-hidden">
